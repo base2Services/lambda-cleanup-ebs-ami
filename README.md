@@ -4,23 +4,23 @@
 
 ## Build
 
-You will ned dotnet core cli tools installed to build the projects
+You will need docker engine and `zip` utility to build project. Also, build script uses `bash` shell
 
 ```
-$ scripts/build.sh
-  Restoring packages for ../Base2.Lambdas.csproj...
-  Lock file has not changed. Skipping lock file write. Path: ../obj/project.assets.json
-  Restore completed in 424.38 ms for ../Base2.Lambdas.csproj.
-
+$ scripts/build.sh 
+  Restoring packages for /project/Base2.Lambdas.csproj...
+  Lock file has not changed. Skipping lock file write. Path: /project/obj/project.assets.json
+  Restore completed in 2.06 sec for /project/Base2.Lambdas.csproj.
+  
   NuGet Config files used:
-      /Users/nikolatosic/.nuget/NuGet/NuGet.Config
-      
+      /root/.nuget/NuGet/NuGet.Config
+  
   Feeds used:
       https://api.nuget.org/v3/index.json
 Microsoft (R) Build Engine version 15.1.1012.6693
 Copyright (C) Microsoft Corporation. All rights reserved.
 
-  Base2.Lambdas -> ../bin/Debug/netcoreapp1.0/Base2.Lambdas.dll
+  Base2.Lambdas -> /project/bin/Debug/netcoreapp1.0/Base2.Lambdas.dll
   adding: AWSSDK.AutoScaling.dll (deflated 70%)
   adding: AWSSDK.Core.dll (deflated 66%)
   adding: AWSSDK.EC2.dll (deflated 70%)
@@ -28,12 +28,12 @@ Copyright (C) Microsoft Corporation. All rights reserved.
   adding: Amazon.Lambda.Core.dll (deflated 57%)
   adding: Amazon.Lambda.Serialization.Json.dll (deflated 56%)
   adding: Base2.Lambdas.deps.json (deflated 74%)
-  adding: Base2.Lambdas.dll (deflated 56%)
-  adding: Base2.Lambdas.pdb (deflated 41%)
+  adding: Base2.Lambdas.dll (deflated 55%)
+  adding: Base2.Lambdas.pdb (deflated 40%)
   adding: Newtonsoft.Json.dll (deflated 60%)
   adding: System.Collections.NonGeneric.dll (deflated 60%)
   adding: System.Runtime.Serialization.Primitives.dll (deflated 48%)
-NikolaBase2MBPro:manual-ami-cleanup-s3-csv nikolatosic$
+
 ```
 
 ## Automated deployment
