@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp1.0</TargetFramework>
     <NetStandardImplicitPackageVersion>1.1.0</NetStandardImplicitPackageVersion>
     <AssemblyName>Base2.Lambdas</AssemblyName>
+    <OutputType>exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.Core" Version="1.0.0"/>
