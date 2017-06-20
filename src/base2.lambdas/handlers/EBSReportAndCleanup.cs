@@ -21,8 +21,15 @@ namespace Base2.Lambdas.Handlers
 
         private ILambdaContext context;
 
+        //automatically deserialize payload / serialize output to/from json
+        /// <summary>
+        /// Cleanups from report in form of csv file on s3 bucket
+        /// </summary>
+        /// <returns>The from report.</returns>
+        /// <param name="input">Input.</param>
+        /// <param name="context">Context.</param>
         [LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
-        public Stream CleanupFromReport(EBSCleanupInput input, ILambdaContext context)
+        public String CleanupFromReport(EBSCleanupInput input, ILambdaContext context)
         {
             AmazonEC2Client ec2Client = new AmazonEC2Client();
             String[] lines = new AWSCommon().GetS3ContextAsText(input.BucketName,input.Key).Split("\n".ToCharArray());
@@ -31,11 +38,11 @@ namespace Base2.Lambdas.Handlers
             foreach(String line in lines)
             {
                 if(input.StartIndex > index){
-                   // context.Logger.LogLine("Skipping line " + index);
                     index++;
                     continue;
                 }
 
+                //check if lambda timeout is near, if so invoke function recursively
                 if(context.RemainingTime.Seconds < 20){
                     context.Logger.LogLine("Lambda timouet near end, starting Lambda recursivly...");
                     var lambdaClient = new Amazon.Lambda.AmazonLambdaClient();
@@ -46,12 +53,13 @@ namespace Base2.Lambdas.Handlers
                         FunctionName = context.FunctionName,
                         Payload = JsonConvert.SerializeObject(input)
                     }).Wait();
-                    return new MemoryStream(Encoding.UTF8.GetBytes("Started recursively with index="+index));
+                    return "Started recursively with index=" + index;
 				}
 
                 string[] cells = line.Split(',');
                 if(cells.Length > 1){
                     string snapshotId = cells[1];
+                    //check if snapshot id in appropriate format
                     if(new Regex("snap-(.*)").Match(snapshotId).Success){
                         context.Logger.LogLine($"CSV-L#{index} Deleting snapshot {snapshotId}..");
                         try {
@@ -66,12 +74,16 @@ namespace Base2.Lambdas.Handlers
                 }
                 index++;
             }
-            // deleteTasks.ForEach(t => {
-            //     t.Wait();
-            // });
-            return new MemoryStream(Encoding.UTF8.GetBytes("OK"));
+
+            return "OK";
         }
 
+        /// <summary>
+        /// Upload EBS snaphots report to S3 bucket
+        /// </summary>
+        /// <returns>The EBSR eport.</returns>
+        /// <param name="input">Input.</param>
+        /// <param name="context">Context.</param>
         [LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
         public Stream UploadEBSReport(EBSReportInput input, ILambdaContext context)
         {
@@ -80,6 +92,12 @@ namespace Base2.Lambdas.Handlers
             return new MemoryStream(Encoding.UTF8.GetBytes("OK"));
         }
 
+        /// <summary>
+        /// Upload content to S3 bucket
+        /// </summary>
+        /// <param name="content">Content.</param>
+        /// <param name="bucket">Bucket.</param>
+        /// <param name="key">Key.</param>
         private void uploadContent(String content, String bucket, String key)
         {
             using (var s3client = new Amazon.S3.AmazonS3Client())
@@ -96,6 +114,12 @@ namespace Base2.Lambdas.Handlers
             }
         }
 
+        /// <summary>
+        /// Return csv file content for EBS snapshot
+        /// </summary>
+        /// <returns>The images as csv.</returns>
+        /// <param name="input">Input.</param>
+        /// <param name="context">Context.</param>
         private String getImagesAsCsv(EBSReportInput input, ILambdaContext context)
         {
             String accountId = context.InvokedFunctionArn.Split(':')[4];
@@ -135,6 +159,7 @@ namespace Base2.Lambdas.Handlers
                     amiId = isAmiRelated ? "ami-" + amiRegex.Groups[2] : "";
                     amiExists = allAMIs.Find(i => i.ImageId.Equals(amiId)) != null;
                 }
+                //if only orphans to be reported, check if orphan (related to ami, ami does not exist)
                 if(!input.OnlyAMIOrphans){
                     sb.Append($"{snapshot.StartTime},{snapshot.SnapshotId},{name},{snapshot.Description},{isAmiRelated},{amiExists},{amiId},{notNameTags}\n");
                 }
