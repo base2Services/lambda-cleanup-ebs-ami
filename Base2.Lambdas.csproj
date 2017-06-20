@@ -1,18 +1,19 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Authors>Nikola Tosic</Authors>
     <TargetFramework>netcoreapp1.0</TargetFramework>
     <NetStandardImplicitPackageVersion>1.1.0</NetStandardImplicitPackageVersion>
     <AssemblyName>Base2.Lambdas</AssemblyName>
-    <OutputType>exe</OutputType>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Amazon.Lambda.Core" Version="1.0.0"/>
-    <PackageReference Include="Amazon.Lambda.Serialization.Json" Version="1.1.0"/>
-    <PackageReference Include="AWSSDK.Core" Version="3.3.14.1"/>
-    <PackageReference Include="AWSSDK.EC2" Version="3.3.13.6"/>
-    <PackageReference Include="AWSSDK.S3" Version="3.3.7"/>
-    <PackageReference Include="AWSSDK.AutoScaling" Version="3.3.0.19"/>
+    <PackageReference Include="Amazon.Lambda.Core" Version="1.0.0" />
+    <PackageReference Include="Amazon.Lambda.Serialization.Json" Version="1.1.0" />
+    <PackageReference Include="AWSSDK.Core" Version="3.3.14.1" />
+    <PackageReference Include="AWSSDK.EC2" Version="3.3.13.6" />
+    <PackageReference Include="AWSSDK.S3" Version="3.3.7" />
+    <PackageReference Include="AWSSDK.AutoScaling" Version="3.3.0.19" />
+    <PackageReference Include="AWSSDK.Lambda" Version="3.3.6.2" />
   </ItemGroup>
 </Project>

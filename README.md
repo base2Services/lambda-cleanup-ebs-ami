@@ -1,5 +1,11 @@
 ## Lambda functions to report and cleanup EBS snapshots and AMIs
 
+1 - build lambda locally
+2 - deploy using built 'Base2.Lambdas.zip' package (manaully for now)
+3 - run the function to generate report. use payload from test/run
+section of this README to see parameters
+4 - run the function to cleanup orphaned AMI EBS snapshosts 
+
 # Requirements
 
 ## Build
@@ -7,14 +13,14 @@
 You will need docker engine and `zip` utility to build project. Also, build script uses `bash` shell
 
 ```
-$ scripts/build.sh 
+$ scripts/build.sh
   Restoring packages for /project/Base2.Lambdas.csproj...
   Lock file has not changed. Skipping lock file write. Path: /project/obj/project.assets.json
   Restore completed in 2.06 sec for /project/Base2.Lambdas.csproj.
-  
+
   NuGet Config files used:
       /root/.nuget/NuGet/NuGet.Config
-  
+
   Feeds used:
       https://api.nuget.org/v3/index.json
 Microsoft (R) Build Engine version 15.1.1012.6693
@@ -41,14 +47,14 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 There is no automated deployment at this point of development - lambda hanlders in this project
 are intended for manual execution.
 
-## Lambda configuration 
+## Lambda configuration
 
 ### Code Package
 
 `scripts/build.sh` script will create lambda package in root directory called `Base2.Lambdas.zip`. Upload
 this package as lambda code
 
-### Handler 
+### Handler
 
 Use following entry points (Lambda function handlers)
 
@@ -58,11 +64,67 @@ Use following entry points (Lambda function handlers)
 
 ### IAM Role
 
-Iam role configured for lambda should have following policies 
+Iam role configured for lambda should have following policies
 
 - read only access to EC2 service
 - write acces to S3 bucket passed in as argument
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Stmt1497509441000",
+            "Effect": "Allow",
+            "Action": [
+                "s3:*"
+            ],
+            "Resource": [
+                "arn:aws:s3:::aws.amis-cleanup.reports.example.com/*"
+            ]
+        }
+    ]
+}
+```
 - DeleteSnapshot permissions
+
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Stmt1497854974000",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:DeleteSnapshot"
+            ],
+            "Resource": [
+                "*"
+            ]
+        }
+    ]
+}
+```
+- Invoke lambda permission, to invoke itself recursively for long running
+deletions
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Stmt1497921290000",
+            "Effect": "Allow",
+            "Action": [
+                "lambda:InvokeAsync",
+                "lambda:InvokeFunction"
+            ],
+            "Resource": [
+                "*"
+            ]
+        }
+    ]
+}
+```
+
 
 ### Timeout
 
@@ -82,13 +144,17 @@ There is no VPC configuration required
 
 ## Test / Run
 
-Both report generation and cleanup tasks are accepting location of csv file to write/read 
-in event parameters
+Both report generation and cleanup tasks are accepting location of csv file to write/read
+in event parameters. For report generation there is optional parameter `OnlyAMIOrphans` which default to 
+`true`. This parameter determines whether only AMI orphans get reported or ALL EBS snapshots
+(danger zone, as you don't want to delete all snapshots, but you may want to delete some that are not
+orphans, thus need for this functionality)
 
 e.g.
 ```
 {
-    "Bucket":"aws.amis-cleanup.reports.base2.services",
-    "Key":"ebs_report_prod.csv"
+    "BucketName":"aws.amis-cleanup.reports.base2.services",
+    "Key":"ebs_report_prod.csv",
+    "OnlyAMIOrphans": true
 }
 ```
