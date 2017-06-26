@@ -22,6 +22,10 @@ provider:
        Action:
          - "s3:*"
        Resource: '*'
+    -  Effect: "Allow"
+       Action:
+         - "lambda:Invoke*"
+       Resource: '*'
 
 
 package:
