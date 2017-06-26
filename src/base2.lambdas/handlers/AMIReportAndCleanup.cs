@@ -28,10 +28,11 @@ namespace Base2.Lambdas.Handlers
             String[] lines = new AWSCommon().GetS3ContextAsText(input.BucketName,input.Key).Split("\n".ToCharArray());
             int index =0;
             foreach(String line in lines){
-                if(index < input.StartIndex){
+                if(input.StartIndex > index){
                     if(index == input.StartIndex -1){
                         context.Logger.LogLine($"Skipped processing up to index #{index}");
                     }
+                    index++;
                     continue;
                 }
 
@@ -58,21 +59,24 @@ namespace Base2.Lambdas.Handlers
                            ImageIds = new List<String>(){amiId} 
                         });
                         describeResponse.Wait();
+                        try {
+                            context.Logger.LogLine($"De-registering AMI {amiId}");
+                            ec2Client.DeregisterImageAsync(new DeregisterImageRequest(){
+                                ImageId = amiId
+                            }).Wait();
 
-                        context.Logger.LogLine($"De-registering AMI {amiId}");
-                        ec2Client.DeregisterImageAsync(new DeregisterImageRequest(){
-                            ImageId = amiId
-                        }).Wait();
-
-                        describeResponse.Result.Images[0].BlockDeviceMappings.ForEach(mapping=>{
-                            if(mapping.Ebs != null && mapping.Ebs.SnapshotId != null){
-                                context.Logger.LogLine($"Deleting snapshot {mapping.Ebs.SnapshotId} for ami {amiId}");
-                                ec2Client.DeleteSnapshotAsync(new DeleteSnapshotRequest(){
-                                    SnapshotId = mapping.Ebs.SnapshotId
-                                }).Wait();
-                            }
-                        });
-                        
+                            describeResponse.Result.Images[0].BlockDeviceMappings.ForEach(mapping=>{
+                                if(mapping.Ebs != null && mapping.Ebs.SnapshotId != null){
+                                    context.Logger.LogLine($"Deleting snapshot {mapping.Ebs.SnapshotId} for ami {amiId}");
+                                    ec2Client.DeleteSnapshotAsync(new DeleteSnapshotRequest(){
+                                        SnapshotId = mapping.Ebs.SnapshotId
+                                    }).Wait();
+                                }
+                            });
+                        } catch(Exception ex){
+                            context.Logger.LogLine($"Failed to delete ami {amiId} with following error:");
+                            context.Logger.LogLine(ex.ToString());
+                        }
                     } else {
                         context.Logger.LogLine($"Skppingg non-ami id : {amiId}");
                     }
