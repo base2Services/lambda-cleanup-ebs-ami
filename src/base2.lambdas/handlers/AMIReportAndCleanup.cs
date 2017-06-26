@@ -12,11 +12,76 @@ using Base2.Lambdas.Models;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Base2.AWS;
+using Amazon.S3;
+using Amazon.Lambda;
+using Newtonsoft.Json;
 
 namespace Base2.Lambdas.Handlers
 {
     public class AMIReportAndCleanup
     {
+
+        [LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
+        public String DeregisterReportedAMIs(AMICleanupInput input, ILambdaContext context){
+            var ec2Client = new AmazonEC2Client();
+            var s3client = new AmazonS3Client();
+            String[] lines = new AWSCommon().GetS3ContextAsText(input.BucketName,input.Key).Split("\n".ToCharArray());
+            int index =0;
+            foreach(String line in lines){
+                if(index < input.StartIndex){
+                    if(index == input.StartIndex -1){
+                        context.Logger.LogLine($"Skipped processing up to index #{index}");
+                    }
+                    continue;
+                }
+
+                if(context.RemainingTime.Seconds < 10){
+                    context.Logger.LogLine($"Less than 10 seconds for lambda execution, starting function recursively..");
+                    var lambdaClient = new Amazon.Lambda.AmazonLambdaClient();
+                    input.StartIndex = index;
+                    lambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
+                    {
+                        InvocationType = Amazon.Lambda.InvocationType.Event,
+                        FunctionName = context.FunctionName,
+                        Payload = JsonConvert.SerializeObject(input)
+                    }).Wait();
+                    return "Started recursively with index=" + index;
+                }
+
+                index = index + 1;
+
+                String[] cells = line.Split(',');
+                if(cells.Length >= 3){
+                    String amiId = cells[2];
+                    if(amiId.StartsWith("ami-")){
+                        var describeResponse = ec2Client.DescribeImagesAsync(new DescribeImagesRequest(){
+                           ImageIds = new List<String>(){amiId} 
+                        });
+                        describeResponse.Wait();
+
+                        context.Logger.LogLine($"De-registering AMI {amiId}");
+                        ec2Client.DeregisterImageAsync(new DeregisterImageRequest(){
+                            ImageId = amiId
+                        }).Wait();
+
+                        describeResponse.Result.Images[0].BlockDeviceMappings.ForEach(mapping=>{
+                            if(mapping.Ebs != null && mapping.Ebs.SnapshotId != null){
+                                context.Logger.LogLine($"Deleting snapshot {mapping.Ebs.SnapshotId} for ami {amiId}");
+                                ec2Client.DeleteSnapshotAsync(new DeleteSnapshotRequest(){
+                                    SnapshotId = mapping.Ebs.SnapshotId
+                                }).Wait();
+                            }
+                        });
+                        
+                    } else {
+                        context.Logger.LogLine($"Skppingg non-ami id : {amiId}");
+                    }
+                }
+            }
+
+
+            return "OK";
+        }
 
         [LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
         public String UploadAMIReport(S3Input input, ILambdaContext context)

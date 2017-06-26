@@ -11,9 +11,11 @@ section of this README to see parameters
 ## Build
 
 You will need docker engine and `zip` utility to build project. Also, build script uses `bash` shell
+If you have `dotnet` cli locally installed you may use `scripts/build_native.sh`, but docker build is 
+recommended way for automating builds. 
 
 ```
-$ scripts/build.sh
+$ scripts/build_docker.sh
   Restoring packages for /project/Base2.Lambdas.csproj...
   Lock file has not changed. Skipping lock file write. Path: /project/obj/project.assets.json
   Restore completed in 2.06 sec for /project/Base2.Lambdas.csproj.
@@ -44,15 +46,44 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 
 ## Automated deployment
 
-There is no automated deployment at this point of development - lambda hanlders in this project
-are intended for manual execution.
+You will need serverless framework, version `> 1.15` to deploy lambda functions automatically. Use `sls deploy`, 
+in comnbination with properly set environment variables:
+
+```
+$ export REGION=ap-southeast-2
+$ export SOURCE_BUCKET=automation.cleanup.base2.services
+$ sls deploy
+Serverless: Packaging service...
+Serverless: Uploading CloudFormation file to S3...
+Serverless: Uploading artifacts...
+Serverless: Validating template...
+Serverless: Creating Stack...
+Serverless: Checking Stack create progress...
+.........................................
+Serverless: Stack create finished...
+Service Information
+service: manualawscleanup
+stage: dev
+region: ap-southeast-2
+api keys:
+  None
+endpoints:
+  None
+functions:
+  AMIReport: manualawscleanup-dev-AMIReport
+  AMICleanup: manualawscleanup-dev-AMICleanup
+  EBSReport: manualawscleanup-dev-EBSReport
+  EBSCleanup: manualawscleanup-dev-EBSCleanup
+```
 
 ## Lambda configuration
 
+Note that all of configurtion below is now implemented through serverless framework, and thus 
+
 ### Code Package
 
-`scripts/build.sh` script will create lambda package in root directory called `Base2.Lambdas.zip`. Upload
-this package as lambda code
+`scripts/build_docker.sh` script will create lambda package in root directory called `Base2.Lambdas.zip`.
+This package is referenced in serverless project as code package.
 
 ### Handler
 
@@ -61,6 +92,7 @@ Use following entry points (Lambda function handlers)
 - Report generation for EBS - `Base2.Lambdas::Base2.Lambdas.Handlers.EBSReportAndCleanup::UploadEBSReport`
 - Report generation for AMI - `Base2.Lambdas::Base2.Lambdas.Handlers.AMIReportAndCleanup::UploadAMIReport`
 - Cleanup from CSV info for EBS - `Base2.Lambdas::Base2.Lambdas.Handlers.EBSReportAndCleanup::CleanupFromReport`
+- Celanup from CSV info for AMIs - `Base2.Lambdas::Base2.Lambdas.Handlers.AMIReportAndCleanup::DeregisterReportedAMIs`
 
 ### IAM Role
 

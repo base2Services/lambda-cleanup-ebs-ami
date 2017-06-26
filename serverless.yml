@@ -1,0 +1,42 @@
+service: manualawscleanup # NOTE: update this with your service name
+
+provider:
+  name: aws
+  runtime: dotnetcore1.0
+  region: ${env:REGION}
+  deploymentBucket: ${env:SOURCE_BUCKET}
+  iamRoleStatements:
+    -  Effect: "Allow"
+       Action:
+         - "ec2:Describe*"
+       Resource: '*'
+    -  Effect: "Allow"
+       Action:
+         - "ec2:DeregisterImage"
+       Resource: '*'       
+    -  Effect: "Allow"
+       Action:
+         - "ec2:DeleteSnapshot"
+       Resource: '*'
+    -  Effect: "Allow"
+       Action:
+         - "s3:*"
+       Resource: '*'
+
+
+package:
+  artifact: ./Base2.Lambdas.zip
+
+functions:
+  AMIReport:
+    handler: Base2.Lambdas::Base2.Lambdas.Handlers.AMIReportAndCleanup::UploadAMIReport
+    timeout: 300
+  AMICleanup:
+    handler: Base2.Lambdas::Base2.Lambdas.Handlers.AMIReportAndCleanup::DeregisterReportedAMIs
+    timeout: 300
+  EBSReport:
+    handler: Base2.Lambdas::Base2.Lambdas.Handlers.EBSReportAndCleanup::UploadEBSReport
+    timeout: 300
+  EBSCleanup:
+    handler: Base2.Lambdas::Base2.Lambdas.Handlers.EBSReportAndCleanup::CleanupFromReport
+    timeout: 300
