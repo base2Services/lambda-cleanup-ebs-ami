@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Authors>Nikola Tosic</Authors>
-    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <NetStandardImplicitPackageVersion>1.1.0</NetStandardImplicitPackageVersion>
     <AssemblyName>Base2.Lambdas</AssemblyName>
     <OutputType>Exe</OutputType>

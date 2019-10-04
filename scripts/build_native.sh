@@ -6,6 +6,6 @@ cd $DIR/..
 rm -rf bin
 dotnet restore
 dotnet publish
-cd bin/Debug/netcoreapp1.0/publish && zip -r Base2.Lambdas.zip *
+cd bin/Debug/netcoreapp2.1/publish && zip -r Base2.Lambdas.zip *
 cd $WD
-mv bin/Debug/netcoreapp1.0/publish/Base2.Lambdas.zip .
+mv bin/Debug/netcoreapp2.1/publish/Base2.Lambdas.zip .
