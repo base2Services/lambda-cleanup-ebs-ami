@@ -55,11 +55,12 @@ namespace Base2.Lambdas.Handlers
                 if(cells.Length >= 3){
                     String amiId = cells[2];
                     if(amiId.StartsWith("ami-")){
-                        var describeResponse = ec2Client.DescribeImagesAsync(new DescribeImagesRequest(){
-                           ImageIds = new List<String>(){amiId} 
-                        });
-                        describeResponse.Wait();
                         try {
+                            var describeResponse = ec2Client.DescribeImagesAsync(new DescribeImagesRequest(){
+                                ImageIds = new List<String>(){amiId} 
+                            });
+                            describeResponse.Wait();
+                            
                             context.Logger.LogLine($"De-registering AMI {amiId}");
                             ec2Client.DeregisterImageAsync(new DeregisterImageRequest(){
                                 ImageId = amiId
