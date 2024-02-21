@@ -2,7 +2,7 @@ service: manualawscleanup # NOTE: update this with your service name
 
 provider:
   name: aws
-  runtime: dotnetcore2.1
+  runtime: dotnetcore3.1
   region: ${env:REGION}
   deploymentBucket: ${env:SOURCE_BUCKET}
   iamRoleStatements:

@@ -28,7 +28,7 @@ $ scripts/build_docker.sh
 Microsoft (R) Build Engine version 15.1.1012.6693
 Copyright (C) Microsoft Corporation. All rights reserved.
 
-  Base2.Lambdas -> /project/bin/Debug/netcoreapp2.1/Base2.Lambdas.dll
+  Base2.Lambdas -> /project/bin/Debug/netcoreapp3.1/Base2.Lambdas.dll
   adding: AWSSDK.AutoScaling.dll (deflated 70%)
   adding: AWSSDK.Core.dll (deflated 66%)
   adding: AWSSDK.EC2.dll (deflated 70%)
