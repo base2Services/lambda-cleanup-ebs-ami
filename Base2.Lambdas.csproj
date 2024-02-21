@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Authors>Nikola Tosic</Authors>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <NetStandardImplicitPackageVersion>1.1.0</NetStandardImplicitPackageVersion>
     <AssemblyName>Base2.Lambdas</AssemblyName>
     <OutputType>Exe</OutputType>
@@ -15,5 +15,9 @@
     <PackageReference Include="AWSSDK.S3" Version="3.3.7" />
     <PackageReference Include="AWSSDK.AutoScaling" Version="3.3.0.19" />
     <PackageReference Include="AWSSDK.Lambda" Version="3.3.6.2" />
+    <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="6.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="6.0.0" />
+    <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
   </ItemGroup>
 </Project>
